@@ -1,4 +1,6 @@
-var lettersToMorse = {
+// s -> stand for short beep
+// l -> stand for long beep
+const lettersToMorse = {
 	"a": "sl",
 	"b": "lsss",
 	"c": "lsls",
@@ -35,25 +37,33 @@ var lettersToMorse = {
 	"8": "lllss",
 	"9": "lllls",
 	"0": "lllll"
-}
+};
 
+// output code
 module.exports = function(pin){
-	var unit = 8;
-	var gap = 7;
+
+	// set unit 8
+	const unit = 8;
+
+	// gap between each beep milliseconds
+	const gap = 7;
 
 	console.log(pin.type);
 
-	var beep = function(num, cb){
+	let beep = function(num, cb){
 		cb = cb || function(){};
-		if(pin.type=="digital"){
+
+		// check pin is digital or not
+		if(pin.type === "digital"){
 			beepDigital(num, cb);
 		}
 		else{
 			beepAnalog(num, cb);
 		}
-	}
+	};
 
-	var beepDigital = function(num, cb){
+	// beep digital method
+	let beepDigital = function(num, cb){
 		if(num){
 			pin.high();
 			pin.low();
@@ -65,10 +75,10 @@ module.exports = function(pin){
 			pin.low();
 			setTimeout(cb, unit*gap);
 		}
-	}
+	};
 
-
-	var beepAnalog = function(num, cb){
+	// analog beep method
+	let beepAnalog = function(num, cb){
 		if(num){
 			pin.write(255);
 			pin.write(0);
@@ -80,32 +90,40 @@ module.exports = function(pin){
 			pin.low();
 			setTimeout(cb, unit*gap);
 		}
-	}
+	};
 
-	var long = function(cb){
+
+	// long character
+	const long = function(cb) {
 		cb = cb || function(){};
 		beep(3*unit, cb);
-	}
+	};
 
-	var short = function(cb){
+    // short character
+	const short = function(cb){
 		cb = cb || function(){};
 		beep(unit, cb);
-	}
+	};
 
-	var pause = function(cb){
+	// pause character
+	const pause = function(cb){
 		setTimeout(cb, 2*unit*gap);
-	}
+	};
 
-	var space = function(cb){
+	// in the case of space character
+	const space = function(cb){
 		setTimeout(cb, 4*unit*gap);
-	}
+	};
 
-	var parse = function(str,cb){
+	// parse string method
+	let parse = function(str,cb){
 		if(str.length){
-			var l = str[0];
+			const l = str[0];
 			process.stdout.write(l);
 			str = str.slice(1);
-			if(l=="s"){
+
+			// checks if letter is l or s
+			if( l === "s" ){
 				short(function(){
 					parse(str,cb);
 				});
@@ -120,20 +138,21 @@ module.exports = function(pin){
 			process.stdout.write("\n");
 			pause(cb);
 		}
-	}
+	};
 
-	var say = function(msg, cb){
+	// return encoded morse code to send in the kit
+	const say = function(msg, cb){
 		if(msg.length){
-			var l = msg[0];
+			let l = msg[0];
 			msg = msg.slice(1);
-			var code = lettersToMorse[l];
+			let code = lettersToMorse[l];
 			if(code){
 				process.stdout.write(l+": ");
 				parse(code, function(){
 					say(msg, cb);
 				});
 			}
-			else if(l==" "){
+			else if( l === " "){
 				space(function(){
 					say(msg, cb);
 				});
@@ -145,7 +164,7 @@ module.exports = function(pin){
 		else{
 			cb();
 		}
-	}
+	};
 
 	return say;
-}
+};
